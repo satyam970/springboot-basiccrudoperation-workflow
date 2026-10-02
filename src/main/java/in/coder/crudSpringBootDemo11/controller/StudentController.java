@@ -8,6 +8,7 @@ import in.coder.crudSpringBootDemo11.dto.UpdateStudentResponseDTO;
 import in.coder.crudSpringBootDemo11.entity.Student;
 import in.coder.crudSpringBootDemo11.service.StudentService;
 import jakarta.persistence.Id;
+import jakarta.validation.Valid;
 import org.aspectj.lang.annotation.DeclareError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class StudentController {
     }
 
     @PostMapping("/create") // create student
-    public ResponseEntity<CreateStudentResponseDTO> createStudent(@RequestBody CreateStudentRequestDTO createStudentRequestDTO) {
+    public ResponseEntity<CreateStudentResponseDTO> createStudent(@Valid @RequestBody CreateStudentRequestDTO createStudentRequestDTO) {
         CreateStudentResponseDTO createdStudent= studentService.createdStudent(createStudentRequestDTO);
         if(createdStudent==null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

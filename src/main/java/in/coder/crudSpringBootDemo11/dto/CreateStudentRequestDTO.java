@@ -1,12 +1,27 @@
 package in.coder.crudSpringBootDemo11.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 public class CreateStudentRequestDTO {
     private Long id;
 
+    @NotNull
+    @NotEmpty(message = "Name cannot be empty")
     private String name;
+
+    @NotNull(message = "Age cannot be null")
+    @Min(value = 18)
     private int age;
+
+    @NotBlank(message = "Please provide a valid email Id.")
     private String email;
+
+    @NotNull(message = "RollNo cannot be null")
     private int rollNo;
+
     private String subject;
 
     public Long getId() {
