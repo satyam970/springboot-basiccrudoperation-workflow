@@ -1,6 +1,10 @@
 package in.coder.crudSpringBootDemo11.controller;
 
 
+import in.coder.crudSpringBootDemo11.dto.CreateStudentRequestDTO;
+import in.coder.crudSpringBootDemo11.dto.CreateStudentResponseDTO;
+import in.coder.crudSpringBootDemo11.dto.UpdateStudentRequestDTO;
+import in.coder.crudSpringBootDemo11.dto.UpdateStudentResponseDTO;
 import in.coder.crudSpringBootDemo11.entity.Student;
 import in.coder.crudSpringBootDemo11.service.StudentService;
 import jakarta.persistence.Id;
@@ -26,17 +30,19 @@ public class StudentController {
     }
 
     @PostMapping("/create") // create student
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
-        student.setDeleted(false);
-        Student createdStudent= studentService.createdStudent(student);
+    public ResponseEntity<CreateStudentResponseDTO> createStudent(@RequestBody CreateStudentRequestDTO createStudentRequestDTO) {
+        CreateStudentResponseDTO createdStudent= studentService.createdStudent(createStudentRequestDTO);
+        if(createdStudent==null){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                              .body(createdStudent);
 
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Student> getStudent(@RequestParam Long  id){
-      Student  studentResp=studentService.getStudent(id);
+    public ResponseEntity<CreateStudentResponseDTO> getStudent(@RequestParam Long  id){
+      CreateStudentResponseDTO  studentResp=studentService.getStudent(id);
 
       if(studentResp==null){
           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // or return ResponseEntity.notFount().build();
@@ -46,8 +52,8 @@ public class StudentController {
     }
 
     @PutMapping("/getAll")
-    public ResponseEntity<List<Student>> getAllStudents(){
-        List<Student> studentResp=studentService.getAllStudent();
+    public ResponseEntity<List<CreateStudentResponseDTO>> getAllStudents(){
+        List<CreateStudentResponseDTO> studentResp=studentService.getAllStudent();
         if(studentResp==null){
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
@@ -55,12 +61,12 @@ public class StudentController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<String> updateStudent(@RequestParam Long id, @RequestBody Student student){
-        Optional<Student> updatedStudent=studentService.updatesStudent(id , student);
-        if(updatedStudent.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Record NOT Found For updation");
+    public ResponseEntity<UpdateStudentResponseDTO> updateStudent(@RequestParam Long id, @RequestBody UpdateStudentRequestDTO student){
+        UpdateStudentResponseDTO updatedStudent=studentService.updatesStudent(id , student);
+        if(updatedStudent==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(updatedStudent);
         }
-        return ResponseEntity.status(HttpStatus.OK).body("Record Updated Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(updatedStudent);
     }
 
     @DeleteMapping("/delete")

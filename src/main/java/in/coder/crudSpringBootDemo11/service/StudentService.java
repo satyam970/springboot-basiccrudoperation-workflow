@@ -1,10 +1,16 @@
 package in.coder.crudSpringBootDemo11.service;
 
+import in.coder.crudSpringBootDemo11.dto.CreateStudentRequestDTO;
+import in.coder.crudSpringBootDemo11.dto.CreateStudentResponseDTO;
+import in.coder.crudSpringBootDemo11.dto.UpdateStudentRequestDTO;
+import in.coder.crudSpringBootDemo11.dto.UpdateStudentResponseDTO;
 import in.coder.crudSpringBootDemo11.entity.Student;
+import in.coder.crudSpringBootDemo11.map.Map;
 import in.coder.crudSpringBootDemo11.repository.StudentRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,45 +23,52 @@ public class StudentService {
         this.studentRepository = studentRepository;
     }
 
-    public Student createdStudent(Student studentReq) {
+    public CreateStudentResponseDTO createdStudent(CreateStudentRequestDTO studentReq) {
         // business logic perform
-        Student studentResp =studentRepository.save(studentReq);
-
-        return studentResp;
+        Student createdstudent=Map.mapToEntity(studentReq,new Student());
+        Student studentResp =studentRepository.save(createdstudent);
+        CreateStudentResponseDTO newstudentResp=Map.mapToDTO(studentResp);
+        return newstudentResp;
     }
 
-    public Student getStudent(Long id){
+    public CreateStudentResponseDTO getStudent(Long id){
 
         Optional<Student> studentResp=studentRepository.findByIdAndDeletedIsFalse(id);
 
         if(studentResp.isPresent()){
-            return studentResp.get();
+            return Map.mapToDTO(studentResp.get());
         }
 
         return null;
     }
 
-    public List<Student> getAllStudent(){
+    public List<CreateStudentResponseDTO> getAllStudent(){
         List<Student> studentResp=studentRepository.findByDeletedIsFalse();
-
-        return studentResp;
+        List<CreateStudentResponseDTO> newStudentResp=studentResp.stream()
+                .map(student -> {
+                    CreateStudentResponseDTO dto=new CreateStudentResponseDTO();
+                    dto.setId(student.getId());
+                    dto.setName(student.getName());
+                    dto.setAge(student.getAge());
+                    dto.setEmail(student.getEmail());
+                    dto.setRollNo(student.getRollNo());
+                    dto.setSubject(student.getSubject());
+                    dto.setCreatedDate(student.getCreatedDate());
+                    dto.setUpdatedDate(student.getUpdatedDate());
+                    return dto;
+                })
+                .toList();
+        return newStudentResp;
     }
 
-    public Optional<Student> updatesStudent(Long id , Student studentReq){
-       Optional<Student>  isPresent=studentRepository.findByIdAndDeletedIsFalse(id);
-       if(isPresent.isPresent()){
-          Student updatedStudent=isPresent.get();
-          updatedStudent.setName(studentReq.getName());
-          updatedStudent.setEmail(studentReq.getEmail());
-          updatedStudent.setAge(studentReq.getAge());
-          updatedStudent.setSubject(studentReq.getSubject());
-          updatedStudent.setRollNo(studentReq.getRollNo());
-          updatedStudent.setDeleted(studentReq.getDeleted());
-
-          studentRepository.save(updatedStudent);
-          return Optional.of(updatedStudent);
-       }
-       return Optional.empty();
+    public UpdateStudentResponseDTO updatesStudent(Long id , UpdateStudentRequestDTO studentReq){
+        Optional<Student> findStudent=studentRepository.findByIdAndDeletedIsFalse(id);
+        System.out.println(findStudent.get().getEmail());
+        Student  newFindStudent= Map.mapToUpdateEntity(studentReq,findStudent.get());
+        System.out.println(newFindStudent.getEmail());
+        Student updatedStudent=studentRepository.save(newFindStudent);
+        System.out.println(updatedStudent.getEmail());
+        return Map.mapToUpdateDTO(updatedStudent);
     }
 
     public Boolean deleteStudent(Long id){
@@ -81,5 +94,6 @@ public class StudentService {
        studentRepository.save(studentToSave);
        return true;
     }
+
 
 }

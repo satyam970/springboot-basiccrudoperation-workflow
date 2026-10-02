@@ -1,5 +1,6 @@
 package in.coder.crudSpringBootDemo11.repository;
 
+import in.coder.crudSpringBootDemo11.dto.CreateStudentResponseDTO;
 import in.coder.crudSpringBootDemo11.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
