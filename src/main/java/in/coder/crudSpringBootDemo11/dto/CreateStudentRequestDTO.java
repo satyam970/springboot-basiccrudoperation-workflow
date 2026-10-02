@@ -1,9 +1,6 @@
 package in.coder.crudSpringBootDemo11.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 public class CreateStudentRequestDTO {
     private Long id;
@@ -17,6 +14,7 @@ public class CreateStudentRequestDTO {
     private int age;
 
     @NotBlank(message = "Please provide a valid email Id.")
+    @Email
     private String email;
 
     @NotNull(message = "RollNo cannot be null")
