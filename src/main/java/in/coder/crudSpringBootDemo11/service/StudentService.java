@@ -5,6 +5,8 @@ import in.coder.crudSpringBootDemo11.dto.CreateStudentResponseDTO;
 import in.coder.crudSpringBootDemo11.dto.UpdateStudentRequestDTO;
 import in.coder.crudSpringBootDemo11.dto.UpdateStudentResponseDTO;
 import in.coder.crudSpringBootDemo11.entity.Student;
+import in.coder.crudSpringBootDemo11.exception.DuplicateResourceException;
+import in.coder.crudSpringBootDemo11.exception.ResourceNotFoundException;
 import in.coder.crudSpringBootDemo11.map.Map;
 import in.coder.crudSpringBootDemo11.repository.StudentRepository;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,9 @@ public class StudentService {
     public CreateStudentResponseDTO createdStudent(CreateStudentRequestDTO studentReq) {
         // business logic perform
         Student createdstudent=Map.mapToEntity(studentReq,new Student());
+        if(emailExists(createdstudent)){
+            throw new DuplicateResourceException("Student with email:"+createdstudent.getEmail()+" already exists");
+        }
         Student studentResp =studentRepository.save(createdstudent);
         CreateStudentResponseDTO newstudentResp=Map.mapToDTO(studentResp);
         return newstudentResp;
@@ -33,13 +38,11 @@ public class StudentService {
 
     public CreateStudentResponseDTO getStudent(Long id){
 
-        Optional<Student> studentResp=studentRepository.findByIdAndDeletedIsFalse(id);
+       Student studentResp= studentRepository
+                .findByIdAndDeletedIsFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with Id:"+id+" not found"));
 
-        if(studentResp.isPresent()){
-            return Map.mapToDTO(studentResp.get());
-        }
-
-        return null;
+       return Map.mapToDTO(studentResp);
     }
 
     public List<CreateStudentResponseDTO> getAllStudent(){
@@ -62,38 +65,32 @@ public class StudentService {
     }
 
     public UpdateStudentResponseDTO updatesStudent(Long id , UpdateStudentRequestDTO studentReq){
-        Optional<Student> findStudent=studentRepository.findByIdAndDeletedIsFalse(id);
-        System.out.println(findStudent.get().getEmail());
-        Student  newFindStudent= Map.mapToUpdateEntity(studentReq,findStudent.get());
-        System.out.println(newFindStudent.getEmail());
+        Student findStudent=studentRepository
+                                    .findByIdAndDeletedIsFalse(id)
+                                    .orElseThrow(() -> new ResourceNotFoundException("Student with Id:"+id+"not found"));
+        Student  newFindStudent= Map.mapToUpdateEntity(studentReq,findStudent);
         Student updatedStudent=studentRepository.save(newFindStudent);
-        System.out.println(updatedStudent.getEmail());
         return Map.mapToUpdateDTO(updatedStudent);
     }
 
-    public Boolean deleteStudent(Long id){
-       boolean isStudent=studentRepository.existsById(id);
-
-       if(isStudent){
-           studentRepository.deleteById(id);
-           return true;
-       }
-       return false;
-
+    public void deleteStudent(Long id){
+       Student studentToBeDeleted=studentRepository
+               .findByIdAndDeletedIsFalse(id)
+               .orElseThrow(() -> new ResourceNotFoundException("Student with Id:"+id+"not found"));
+       studentRepository.delete(studentToBeDeleted);
     }
 
-    public Boolean deletedStudentSoftly(Long id){
-       Optional<Student> isDeletedSoft=studentRepository.findByIdAndDeletedIsFalse(id);
+    public void deletedStudentSoftly(Long id){
+        Student studentToBeDeleted=studentRepository
+                .findByIdAndDeletedIsFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with Id:"+id+"not found"));
 
-       if(isDeletedSoft.isEmpty()){
-           return false;
-       }
-
-       Student studentToSave =isDeletedSoft.get();
-       studentToSave.setDeleted(true);
-       studentRepository.save(studentToSave);
-       return true;
+       studentToBeDeleted.setDeleted(true);
+       studentRepository.save(studentToBeDeleted);
     }
 
+    private boolean emailExists(Student student){
+        return studentRepository.existsByEmail(student.getEmail());
+    }
 
 }
